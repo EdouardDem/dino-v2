@@ -1,0 +1,19 @@
+
+services:
+  depth-estimation:
+    image: edouarddem/dino-v2-depth
+    container_name: depth-estimation
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DEPTHER_BACKBONE_SIZE=small
+      - DEPTHER_HEAD_TYPE=dpt
+      - DEPTHER_HEAD_DATASET=nyu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu] 

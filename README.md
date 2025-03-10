@@ -1,16 +1,14 @@
 # DINOv2 Depth Estimation
 
-## Docker commands
+This is a simple FastAPI server that uses a pre-trained DINOv2 model to estimate the depth of an image or video.
 
-### Build image
+> [!IMPORTANT]
+> This requires a GPU with CUDA support and the NVIDIA Container Toolkit.
+> For more information, see the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html).
 
-Build the docker image:
+## Start server
 
-```bash
-docker build -t dino-v2-depth .
-```
-
-### Run server
+### Run server using Docker
 
 Run the docker container:
 
@@ -22,7 +20,7 @@ docker run --rm \
     -e DEPTHER_HEAD_TYPE=dpt \
     -e DEPTHER_HEAD_DATASET=nyu \
     --name depth-estimation \
-    dino-v2-depth
+    edouarddem/dino-v2-depth
 ```
 
 #### Configuration Options
@@ -33,15 +31,33 @@ The following environment variables can be used to configure the depth estimatio
 - `DEPTHER_HEAD_TYPE`: Type of the depth estimation head (values `linear`, `linear4`, `dpt`, default: `dpt`)
 - `DEPTHER_HEAD_DATASET`: Dataset used for the depth head (values `nyu`, `kitti`, default: `nyu`)
 
+### Run the server using docker-compose
+
+```bash
+docker-compose up -d
+```
+
+For more information, see the [docker-compose.yml](docker-compose.yml) file.
+
+### Build image from source
+
+Build the docker image:
+
+```bash
+docker build -t edouarddem/dino-v2-depth .
+```
+
 ## Usage
 
-### Usage with cURL
+### Get depth map from image
 
 To generate a depth map from an image:
 
 ```bash
 curl -X POST -F "file=@tests/dining-room.jpg" http://localhost:8000/depth/image --output tests/dining-room-depth-map.png
 ```
+
+### Get depth map from video
 
 To generate a depth map video from a video file:
 
@@ -60,7 +76,13 @@ Parameters for video processing:
 - `scale_factor`: Scale factor to apply to the video resolution (default: 1.0)
 - `fps`: Output video frame rate (default: same as input video)
 
-To check CUDA status:
+> [!NOTE]
+> Only MP4 videos are supported.
+
+## Check CUDA status
+
+To get the GPU information:
+
 ```bash
 curl http://localhost:8000/cuda-status
 ```
