@@ -18,15 +18,27 @@ Run the docker container:
 docker run --rm \
     --gpus all \
     -p 8000:8000 \
+    -e DEPTHER_BACKBONE_SIZE=small \
+    -e DEPTHER_HEAD_TYPE=dpt \
+    -e DEPTHER_HEAD_DATASET=nyu \
     --name depth-estimation \
     dino-v2-depth
 ```
+
+#### Configuration Options
+
+The following environment variables can be used to configure the depth estimation model:
+
+- `DEPTHER_BACKBONE_SIZE`: Size of the backbone model (values `small`, `base`, `large` or `giant`, default: `small`)
+- `DEPTHER_HEAD_TYPE`: Type of the depth estimation head (values `linear`, `linear4`, `dpt`, default: `dpt`)
+- `DEPTHER_HEAD_DATASET`: Dataset used for the depth head (values `nyu`, `kitti`, default: `nyu`)
 
 ## Usage
 
 ### Usage with cURL
 
 To generate a depth map from an image:
+
 ```bash
 curl -X POST -F "file=@tests/dining-room.jpg" http://localhost:8000/depth/image --output tests/dining-room-depth-map.png
 ```

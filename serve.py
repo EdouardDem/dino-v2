@@ -4,14 +4,15 @@ import io
 from depther import Depther
 import uvicorn
 import torch
+import os
 
 app = FastAPI()
 
 # Initialisation du Depther au démarrage
 depther = Depther(
-    backbone_size="small",
-    head_type="dpt",
-    head_dataset="nyu"
+    backbone_size=os.getenv("DEPTHER_BACKBONE_SIZE", "small"),
+    head_type=os.getenv("DEPTHER_HEAD_TYPE", "dpt"),
+    head_dataset=os.getenv("DEPTHER_HEAD_DATASET", "nyu")
 )
 
 @app.get("/cuda-status")
