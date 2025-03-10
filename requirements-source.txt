@@ -1,4 +1,4 @@
-git+https://github.com/ajhamdi/mvtorch
-git+https://github.com/facebookresearch/dinov2
+git+https://github.com/ajhamdi/mvtorch@3201b3a8a941e0713bdccca1e193aed6bbd919d3
+git+https://github.com/facebookresearch/dinov2@e1277af2ba9496fbadf7aec6eba56e8d882d1e35
 --extra-index-url https://download.pytorch.org/whl/cu117
 --extra-index-url https://pypi.nvidia.com

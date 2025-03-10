@@ -6,18 +6,14 @@ torch==2.0.0
 cuml-cu11
 
 torchvision==0.15.0
-# torchaudio
-
 xformers==0.0.18
 
-SoccerNet
-av
-pyav
-pydub
-audiofile
-Pillow
-opencv-python
-numpy
-matplotlib
+# Utils
+Pillow==11.1.0
+numpy==1.26.4
+matplotlib==3.9.4
 
-
+# FastAPI   
+fastapi==0.115.11
+python-multipart==0.0.20
+uvicorn==0.34.0

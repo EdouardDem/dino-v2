@@ -18,7 +18,7 @@ Run the docker container:
 docker run --rm \
     --gpus all \
     -p 8000:8000 \
-    -e DEPTHER_BACKBONE_SIZE=small \
+    -e DEPTHER_BACKBONE_SIZE=base \
     -e DEPTHER_HEAD_TYPE=dpt \
     -e DEPTHER_HEAD_DATASET=nyu \
     --name depth-estimation \

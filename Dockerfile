@@ -32,19 +32,12 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-# Test CUDA
-COPY cuda.py ./
-RUN python cuda.py
-
 # Install mmcv
 RUN mim install mmcv-full==1.7.2
 
 # Install source dependencies
 COPY requirements-source.txt ./
 RUN pip install -r requirements-source.txt
-
-# Install FastAPI
-RUN pip install fastapi python-multipart uvicorn
 
 # Copy Python files
 COPY depther.py serve.py ./
