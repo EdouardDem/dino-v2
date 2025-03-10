@@ -174,12 +174,16 @@ class Depther():
         return depth_image
 
     def _render_depth(self, values, colormap_name="magma_r") -> Image:
+        # Ensure values is 2D
+        if len(values.shape) > 2:
+            values = values.squeeze()
+            
         min_value, max_value = values.min(), values.max()
         normalized_values = (values - min_value) / (max_value - min_value)
 
         colormap = matplotlib.colormaps[colormap_name]
-        colors = colormap(normalized_values, bytes=True) # ((1)xhxwx4)
-        colors = colors[:, :, :3] # Discard alpha component
+        colors = colormap(normalized_values, bytes=True)  # (hxwx4)
+        colors = colors[:, :, :3]  # Discard alpha component
         return Image.fromarray(colors)
 
     def _make_depth_transform(self) -> transforms.Compose:

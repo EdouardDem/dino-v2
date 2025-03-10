@@ -43,6 +43,23 @@ To generate a depth map from an image:
 curl -X POST -F "file=@tests/dining-room.jpg" http://localhost:8000/depth/image --output tests/dining-room-depth-map.png
 ```
 
+To generate a depth map video from a video file:
+
+```bash
+curl -X POST \
+    -F "file=@tests/video.mp4" \
+    -F "batch_size=4" \
+    -F "scale_factor=1.0" \
+    -F "fps=30" \
+    http://localhost:8000/depth/video \
+    --output tests/depth_video.mp4
+```
+
+Parameters for video processing:
+- `batch_size`: Number of frames to process simultaneously (default: 4)
+- `scale_factor`: Scale factor to apply to the video resolution (default: 1.0)
+- `fps`: Output video frame rate (default: same as input video)
+
 To check CUDA status:
 ```bash
 curl http://localhost:8000/cuda-status
