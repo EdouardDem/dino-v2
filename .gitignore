@@ -1,2 +1,4 @@
 __pycache__
-tests/
+tests/*
+!tests/image.jpg
+!tests/video.mp4

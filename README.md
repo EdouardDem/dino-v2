@@ -101,3 +101,23 @@ The response indicates:
 - `cuda_device_count`: number of CUDA devices detected
 - `cuda_device_name`: name of the first CUDA device (if available)
 
+## Client
+
+We provide a simple client to get the depth map from an image or video.
+
+The class `DeptherClient` is defined in the [client.py](client.py) file.
+
+You can test the client with the following command:
+
+```bash
+python client.py
+```
+
+This will create the following files:
+
+- `tests/depth_image.png`: Depth map from the image
+- `tests/depth_video.mp4`: Depth map from the video
+
+> [!NOTE]
+> This requires the Docker container to be running.
+
