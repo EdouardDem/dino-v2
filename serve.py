@@ -3,6 +3,7 @@ from PIL import Image
 import io
 from depther import Depther
 import uvicorn
+import torch
 
 app = FastAPI()
 
@@ -12,6 +13,14 @@ depther = Depther(
     head_type="dpt",
     head_dataset="nyu"
 )
+
+@app.get("/cuda-status")
+async def get_cuda_status():
+    return {
+        "cuda_available": torch.cuda.is_available(),
+        "cuda_device_count": torch.cuda.device_count() if torch.cuda.is_available() else 0,
+        "cuda_device_name": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None
+    }
 
 @app.post("/depth/image")
 async def process_image(file: UploadFile = File(...)):

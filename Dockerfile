@@ -47,7 +47,7 @@ RUN pip install -r requirements-source.txt
 RUN pip install fastapi python-multipart uvicorn
 
 # Copy Python files
-COPY main.py depther.py serve.py ./
+COPY depther.py serve.py ./
 
 # Default command
 CMD ["python", "serve.py"] 
