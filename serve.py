@@ -17,6 +17,9 @@ depther = Depther(
     head_dataset=os.getenv("DEPTHER_HEAD_DATASET", "nyu")
 )
 
+host = os.getenv("HOST", "0.0.0.0")
+port = os.getenv("PORT", 8000)  
+
 @app.get("/cuda-status")
 async def get_cuda_status():
     return {
@@ -82,4 +85,4 @@ async def process_video(
             )
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host=host, port=port) 

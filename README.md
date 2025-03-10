@@ -30,6 +30,8 @@ The following environment variables can be used to configure the depth estimatio
 - `DEPTHER_BACKBONE_SIZE`: Size of the backbone model (values `small`, `base`, `large` or `giant`, default: `small`)
 - `DEPTHER_HEAD_TYPE`: Type of the depth estimation head (values `linear`, `linear4`, `dpt`, default: `dpt`)
 - `DEPTHER_HEAD_DATASET`: Dataset used for the depth head (values `nyu`, `kitti`, default: `nyu`)
+- `HOST`: Host address to bind the server to (default: `0.0.0.0`)
+- `PORT`: Port to bind the server to (default: `8000`)
 
 ### Run the server using docker-compose
 
