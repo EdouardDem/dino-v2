@@ -64,7 +64,8 @@ class DeptherClient:
         output_path: Union[str, Path],
         batch_size: int = 4,
         scale_factor: float = 1.0,
-        fps: Optional[int] = None
+        fps: Optional[int] = None,
+        codec: str = 'mp4v'
     ) -> None:
         """Generate a depth map video from a video file.
         
@@ -74,6 +75,7 @@ class DeptherClient:
             batch_size: Number of frames to process simultaneously
             scale_factor: Scale factor to apply to the video resolution
             fps: Output video frame rate (if None, uses input video fps)
+            codec: Video codec to use (values `avc1`, `h264`, or `mp4v`, default: `mp4v`)
         """
         with open(video_path, 'rb') as f:
             files = {'file': f}
@@ -83,7 +85,10 @@ class DeptherClient:
             }
             if fps is not None:
                 data['fps'] = fps
-                
+
+            if codec is not None:
+                data['codec'] = codec
+
             response = requests.post(
                 f"{self.base_url}/depth/video",
                 files=files,
@@ -115,5 +120,6 @@ if __name__ == "__main__":
         "tests/depth_video.mp4",
         batch_size=4,
         scale_factor=1.0,
-        # fps=30
+        fps=30,
+        codec='mp4v'
     ) 

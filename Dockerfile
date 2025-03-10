@@ -9,10 +9,15 @@ RUN apt-get update && apt-get install -y \
     python3.9 \
     python3.9-dev \
     python3-pip \
+    python3-opencv \
     git \
     ffmpeg \
     libsm6 \
     libxext6 \
+    libx264-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Python 3.9 as default version

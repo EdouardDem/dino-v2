@@ -69,6 +69,7 @@ curl -X POST \
     -F "batch_size=4" \
     -F "scale_factor=1.0" \
     -F "fps=30" \
+    -F "codec=mp4v" \
     http://localhost:8000/depth/video \
     --output tests/depth_video.mp4
 ```
@@ -77,9 +78,10 @@ Parameters for video processing:
 - `batch_size`: Number of frames to process simultaneously (default: 4)
 - `scale_factor`: Scale factor to apply to the video resolution (default: 1.0)
 - `fps`: Output video frame rate (default: same as input video)
+- `codec`: Video codec to use (values `avc1`, `h264` or `mp4v`, default: `mp4v`)
 
 > [!NOTE]
-> Only MP4 videos are supported.
+> Only MP4 videos are supported. The H.264 codec (`avc1`) is recommended for better compatibility.
 
 ## Check CUDA status
 

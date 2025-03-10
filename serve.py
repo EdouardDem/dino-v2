@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Response
+from fastapi import FastAPI, UploadFile, File, Response, Form
 from PIL import Image
 import io
 from depther import Depther
@@ -51,9 +51,10 @@ async def process_image(file: UploadFile = File(...)):
 @app.post("/depth/video")
 async def process_video(
     file: UploadFile = File(...),
-    batch_size: int = 4,
-    scale_factor: float = 1.0,
-    fps: int = None
+    batch_size: int = Form(4),
+    scale_factor: float = Form(1.0),
+    fps: int = Form(None),
+    codec: str = Form('mp4v')
 ):
     # Create temporary file for input video
     with NamedTemporaryFile(suffix=".mp4", delete=False) as input_video:
@@ -70,7 +71,8 @@ async def process_video(
                 output_path=output_video.name,
                 batch_size=batch_size,
                 scale_factor=scale_factor,
-                fps=fps
+                fps=fps,
+                codec=codec
             )
             
             # Delete input file

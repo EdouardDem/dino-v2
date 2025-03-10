@@ -77,7 +77,8 @@ class Depther():
         output_path: Union[str, Path],
         batch_size: int = 4,
         scale_factor: float = 1,
-        fps: int = None
+        fps: int = None,
+        codec: str = 'mp4v'
     ) -> None:
         """Process a video to generate depth estimation.
         
@@ -87,6 +88,7 @@ class Depther():
             batch_size: Number of frames to process simultaneously
             scale_factor: Scale factor to apply to the images
             fps: Frames per second for the output video. If None, uses the input video fps
+            codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
         """
         # Open the video
         cap = cv2.VideoCapture(str(video_path))
@@ -104,7 +106,7 @@ class Depther():
         new_width = int(width * scale_factor)
         new_height = int(height * scale_factor)
         
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*codec)
         out = cv2.VideoWriter(
             str(output_path), 
             fourcc, 
@@ -112,6 +114,9 @@ class Depther():
             (new_width, new_height),
             isColor=True
         )
+
+        if not out.isOpened():
+            raise ValueError(f"Could not open video: {output_path} with codec: {codec}")
 
         try:
             # Process video in batches
