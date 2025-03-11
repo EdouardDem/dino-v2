@@ -92,9 +92,7 @@ class Depther():
             codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
             colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
         """
-        # Validate colormap
-        if colormap_name not in matplotlib.colormaps:
-            raise ValueError(f"Invalid colormap name: {colormap_name}. Must be one of {', '.join(matplotlib.colormaps)}")
+        self._validate_colormap(colormap_name)
 
         # Open the video
         cap = cv2.VideoCapture(str(video_path))
@@ -184,9 +182,7 @@ class Depther():
         Returns:
             PIL Image containing the depth map
         """
-        # Validate colormap
-        if colormap_name not in matplotlib.colormaps:
-            raise ValueError(f"Invalid colormap name: {colormap_name}. Must be one of {', '.join(matplotlib.colormaps)}")
+        self._validate_colormap(colormap_name)
 
         rescaled_image = image.resize((
             int(scale_factor * image.width), 
@@ -214,6 +210,10 @@ class Depther():
         colors = colormap(normalized_values, bytes=True)  # (hxwx4)
         colors = colors[:, :, :3]  # Discard alpha component
         return Image.fromarray(colors)
+    
+    def _validate_colormap(self, colormap_name: str) -> None:
+        if colormap_name not in matplotlib.colormaps:
+            raise ValueError(f"Invalid colormap name: {colormap_name}. Must be one of {', '.join(matplotlib.colormaps)}")
 
     def _make_depth_transform(self) -> transforms.Compose:
         return transforms.Compose([
