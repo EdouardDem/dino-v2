@@ -113,6 +113,7 @@ class DeptherClient:
 # Example usage
 if __name__ == "__main__":
     client = DeptherClient("http://localhost:8000")
+    folder = Path(__file__).parent / "tests"
     
     # Check CUDA status
     cuda_status = client.get_cuda_status()
@@ -120,21 +121,21 @@ if __name__ == "__main__":
     
     # Process an image with different colormaps
     client.get_depth_map(
-        "tests/image.jpg",
-        "tests/depth_image_magma.png",
+        folder / "image.jpg",
+        folder / "depth_image_magma.png",
         colormap_name='magma_r'
     )
     
     client.get_depth_map(
-        "tests/image.jpg",
-        "tests/depth_image_viridis.png",
+        folder / "image.jpg",
+        folder / "depth_image_viridis.png",
         colormap_name='viridis'
     )
     
     # Process a video
     client.get_depth_video(
-        "tests/video.mp4",
-        "tests/depth_video.mp4",
+        folder / "video.mp4",
+        folder / "depth_video.mp4",
         batch_size=4,
         scale_factor=1.0,
         fps=30,
