@@ -1,4 +1,4 @@
-# From https://github.com/facebookresearch/dinov2/blob/main/notebooks/depth_estimation.ipynb
+# From https://github.com/facebookresearch/dinov2/blob/main/notebooks/semantic_segmentation.ipynb
 
 import math
 import itertools
@@ -20,8 +20,6 @@ import torch.nn.functional as F
 import torch.utils.checkpoint
 
 from mmseg.apis import init_segmentor, inference_segmentor
-
-from dinov2.eval.depth.models import build_depther
 
 DINOV2_BASE_URL = "https://dl.fbaipublicfiles.com/dinov2"
 
