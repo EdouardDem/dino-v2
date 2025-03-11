@@ -1,0 +1,19 @@
+
+services:
+  segmentation:
+    image: edouarddem/dino-v2-segmentation
+    container_name: segmentation
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - SEGMENTATION_BACKBONE_SIZE=small
+      - SEGMENTATION_HEAD_TYPE=dpt
+      - SEGMENTATION_HEAD_DATASET=nyu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu] 
