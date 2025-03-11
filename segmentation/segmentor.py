@@ -72,11 +72,10 @@ class Segmentor():
         self.model = self._create_segmentor()
         self._load_checkpoint()
 
-    def get_depth_for_video(
+    def get_segmentation_for_video(
         self, 
         video_path: Union[str, Path], 
         output_path: Union[str, Path],
-        batch_size: int = 4,
         scale_factor: float = 1,
         fps: int = None,
         codec: str = 'mp4v',
@@ -87,7 +86,6 @@ class Segmentor():
         Args:
             video_path: Path to the input video
             output_path: Path where to save the depth video
-            batch_size: Number of frames to process simultaneously
             scale_factor: Scale factor to apply to the images
             fps: Frames per second for the output video. If None, uses the input video fps
             codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
@@ -124,9 +122,6 @@ class Segmentor():
             raise ValueError(f"Could not open video: {output_path} with codec: {codec}")
 
         try:
-            # Process video in batches
-            current_batch = []
-            
             for _ in range(total_frames):
                 ret, frame = cap.read()
                 if not ret:
@@ -140,49 +135,42 @@ class Segmentor():
                 if scale_factor != 1:
                     pil_image = pil_image.resize((new_width, new_height))
                 
-                # Add image to current batch
-                current_batch.append(self.depth_transform(pil_image))
+                # Process the frame using inference_segmentor
+                result = inference_segmentor(self.model, pil_image)[0]
+                depth_image = self._render_segmentation(result.squeeze().cpu(), colormap_name=colormap_name)
                 
-                # Process batch when full or at the end
-                if len(current_batch) == batch_size or _ == total_frames - 1:
-                    # Create batch tensor
-                    batch_tensor = torch.stack(current_batch).cuda()
-                    
-                    # Process the batch
-                    with torch.inference_mode():
-                        results = self.model.whole_inference(batch_tensor, img_meta=None, rescale=True)
-                    
-                    # Process each result from the batch
-                    for result in results:
-                        depth_image = self._render_segmentation(result.cpu(), colormap_name=colormap_name)
-                        # Convert depth image to BGR for OpenCV
-                        depth_frame = cv2.cvtColor(np.array(depth_image), cv2.COLOR_RGB2BGR)
-                        out.write(depth_frame)
-                    
-                    # Reset batch
-                    current_batch = []
+                # Convert depth image to BGR for OpenCV
+                depth_frame = cv2.cvtColor(np.array(depth_image), cv2.COLOR_RGB2BGR)
+                out.write(depth_frame)
         
         finally:
             # Release resources
             cap.release()
             out.release()
 
-    def get_depth_for_image(
+    def get_segmentation_for_image(
         self,
         image: Image.Image,
+        scale_factor: float = 1,
         colormap_name: str = 'magma_r'
     ) -> Image.Image:
         """Generate depth map for an image.
         
         Args:
             image: Input PIL image
+            scale_factor: Scale factor to apply to the image resolution
             colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
             
         Returns:
             PIL Image containing the depth map
         """
         self._validate_colormap(colormap_name)
-        result = inference_segmentor(self.model, image)[0]
+
+        rescaled_image = image.resize((
+            int(scale_factor * image.width), 
+            int(scale_factor * image.height)
+        ))
+        result = inference_segmentor(self.model, rescaled_image)[0]
         segmentation_image = self._render_segmentation(result.squeeze().cpu(), colormap_name=colormap_name)
         
         return segmentation_image
