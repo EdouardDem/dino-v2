@@ -56,8 +56,17 @@ docker build -t edouarddem/dino-v2-depth .
 To generate a depth map from an image:
 
 ```bash
-curl -X POST -F "file=@tests/dining-room.jpg" http://localhost:8000/depth/image --output tests/dining-room-depth-map.png
+curl -X POST \
+    -F "file=@tests/dining-room.jpg" \
+    -F "scale_factor=1.0" \
+    -F "colormap_name=magma_r" \
+    http://localhost:8000/depth/image \
+    --output tests/dining-room-depth-map.png
 ```
+
+Parameters for image processing:
+- `scale_factor`: Scale factor to apply to the image resolution (default: `1.0`)
+- `colormap_name`: Matplotlib colormap to use for depth visualization (default: `magma_r`)
 
 ### Get depth map from video
 
@@ -70,18 +79,32 @@ curl -X POST \
     -F "scale_factor=1.0" \
     -F "fps=30" \
     -F "codec=mp4v" \
+    -F "colormap_name=magma_r" \
     http://localhost:8000/depth/video \
     --output tests/depth_video.mp4
 ```
 
 Parameters for video processing:
-- `batch_size`: Number of frames to process simultaneously (default: 4)
-- `scale_factor`: Scale factor to apply to the video resolution (default: 1.0)
+- `batch_size`: Number of frames to process simultaneously (default: `4`)
+- `scale_factor`: Scale factor to apply to the video resolution (default: `1.0`)
 - `fps`: Output video frame rate (default: same as input video)
 - `codec`: Video codec to use (values `avc1`, `h264` or `mp4v`, default: `mp4v`)
+- `colormap_name`: Matplotlib colormap to use for depth visualization (default: `magma_r`)
 
 > [!NOTE]
 > Only MP4 videos are supported. The H.264 codec (`avc1`) is recommended for better compatibility.
+
+### Available Colormaps
+
+The `colormap_name` parameter accepts any Matplotlib colormap name. Some popular options include:
+- `magma_r` (default): Reversed magma colormap, good for depth visualization
+- `viridis`: Green-blue colormap
+- `plasma`: Plasma colormap
+- `inferno`: Fire-like colormap
+- `cividis`: Color-vision-deficiency-friendly colormap
+- `binary`: Simple black and white colormap
+
+For a complete list of available colormaps, visit the [Matplotlib colormap reference](https://matplotlib.org/stable/gallery/color/colormap_reference.html).
 
 ## Check CUDA status
 

@@ -32,7 +32,9 @@ class DeptherClient:
     def get_depth_map(
         self,
         image_path: Union[str, Path],
-        output_path: Optional[Union[str, Path]] = None
+        output_path: Optional[Union[str, Path]] = None,
+        scale_factor: float = 1.0,
+        colormap_name: str = 'magma_r'
     ) -> Union[Image.Image, None]:
         """Generate a depth map from an image.
         
@@ -40,15 +42,22 @@ class DeptherClient:
             image_path: Path to the input image
             output_path: Optional path to save the depth map. If not provided,
                         returns a PIL Image object
+            scale_factor: Scale factor to apply to the image resolution
+            colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
         
         Returns:
             PIL Image if output_path is None, else None
         """
         with open(image_path, 'rb') as f:
             files = {'file': f}
+            data = {
+                'scale_factor': scale_factor,
+                'colormap_name': colormap_name
+            }
             response = requests.post(
                 f"{self.base_url}/depth/image",
-                files=files
+                files=files,
+                data=data
             )
             response.raise_for_status()
             
@@ -65,7 +74,8 @@ class DeptherClient:
         batch_size: int = 4,
         scale_factor: float = 1.0,
         fps: Optional[int] = None,
-        codec: str = 'mp4v'
+        codec: str = 'mp4v',
+        colormap_name: str = 'magma_r'
     ) -> None:
         """Generate a depth map video from a video file.
         
@@ -75,20 +85,20 @@ class DeptherClient:
             batch_size: Number of frames to process simultaneously
             scale_factor: Scale factor to apply to the video resolution
             fps: Output video frame rate (if None, uses input video fps)
-            codec: Video codec to use (values `avc1`, `h264`, or `mp4v`, default: `mp4v`)
+            codec: Video codec to use ('avc1' for H.264 or 'mp4v', default: 'mp4v')
+            colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
         """
         with open(video_path, 'rb') as f:
             files = {'file': f}
             data = {
                 'batch_size': batch_size,
-                'scale_factor': scale_factor
+                'scale_factor': scale_factor,
+                'codec': codec,
+                'colormap_name': colormap_name
             }
             if fps is not None:
                 data['fps'] = fps
-
-            if codec is not None:
-                data['codec'] = codec
-
+                
             response = requests.post(
                 f"{self.base_url}/depth/video",
                 files=files,
@@ -108,10 +118,17 @@ if __name__ == "__main__":
     cuda_status = client.get_cuda_status()
     print("CUDA Status:", cuda_status)
     
-    # Process an image
+    # Process an image with different colormaps
     client.get_depth_map(
         "tests/image.jpg",
-        "tests/depth_image.png"
+        "tests/depth_image_magma.png",
+        colormap_name='magma_r'
+    )
+    
+    client.get_depth_map(
+        "tests/image.jpg",
+        "tests/depth_image_viridis.png",
+        colormap_name='viridis'
     )
     
     # Process a video
@@ -121,5 +138,6 @@ if __name__ == "__main__":
         batch_size=4,
         scale_factor=1.0,
         fps=30,
-        codec='mp4v'
+        codec='mp4v',
+        colormap_name='binary'
     ) 

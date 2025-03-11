@@ -78,7 +78,8 @@ class Depther():
         batch_size: int = 4,
         scale_factor: float = 1,
         fps: int = None,
-        codec: str = 'mp4v'
+        codec: str = 'mp4v',
+        colormap_name: str = 'magma_r'
     ) -> None:
         """Process a video to generate depth estimation.
         
@@ -89,7 +90,12 @@ class Depther():
             scale_factor: Scale factor to apply to the images
             fps: Frames per second for the output video. If None, uses the input video fps
             codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
+            colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
         """
+        # Validate colormap
+        if colormap_name not in matplotlib.colormaps:
+            raise ValueError(f"Invalid colormap name: {colormap_name}. Must be one of {', '.join(matplotlib.colormaps)}")
+
         # Open the video
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
@@ -149,7 +155,7 @@ class Depther():
                     
                     # Process each result from the batch
                     for result in results:
-                        depth_image = self._render_depth(result.cpu())
+                        depth_image = self._render_depth(result.cpu(), colormap_name=colormap_name)
                         # Convert depth image to BGR for OpenCV
                         depth_frame = cv2.cvtColor(np.array(depth_image), cv2.COLOR_RGB2BGR)
                         out.write(depth_frame)
@@ -162,11 +168,29 @@ class Depther():
             cap.release()
             out.release()
 
-    def get_depth_for_image(self, image: Image.Image, scale_factor: float = 1) -> Image.Image:
+    def get_depth_for_image(
+        self,
+        image: Image.Image,
+        scale_factor: float = 1,
+        colormap_name: str = 'magma_r'
+    ) -> Image.Image:
+        """Generate depth map for an image.
+        
+        Args:
+            image: Input PIL image
+            scale_factor: Scale factor to apply to the image resolution
+            colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
+            
+        Returns:
+            PIL Image containing the depth map
+        """
+        # Validate colormap
+        if colormap_name not in matplotlib.colormaps:
+            raise ValueError(f"Invalid colormap name: {colormap_name}. Must be one of {', '.join(matplotlib.colormaps)}")
 
         rescaled_image = image.resize((
-            scale_factor * image.width, 
-            scale_factor * image.height
+            int(scale_factor * image.width), 
+            int(scale_factor * image.height)
         ))
         transformed_image = self.depth_transform(rescaled_image)
         batch = transformed_image.unsqueeze(0).cuda() # Make a batch of one image
@@ -174,7 +198,7 @@ class Depther():
         with torch.inference_mode():
             result = self.model.whole_inference(batch, img_meta=None, rescale=True)
 
-        depth_image = self._render_depth(result.squeeze().cpu())
+        depth_image = self._render_depth(result.squeeze().cpu(), colormap_name=colormap_name)
         
         return depth_image
 

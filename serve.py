@@ -29,7 +29,11 @@ async def get_cuda_status():
     }
 
 @app.post("/depth/image")
-async def process_image(file: UploadFile = File(...)):
+async def process_image(
+    file: UploadFile = File(...),
+    scale_factor: float = Form(1.0),
+    colormap_name: str = Form('magma_r')
+):
     # Read image from uploaded file
     image_data = await file.read()
     image = Image.open(io.BytesIO(image_data))
@@ -39,7 +43,11 @@ async def process_image(file: UploadFile = File(...)):
         image = image.convert("RGB")
     
     # Get depth map
-    depth_image = depther.get_depth_for_image(image)
+    depth_image = depther.get_depth_for_image(
+        image,
+        scale_factor=scale_factor,
+        colormap_name=colormap_name
+    )
     
     # Convert depth image to bytes
     img_byte_arr = io.BytesIO()
@@ -54,7 +62,8 @@ async def process_video(
     batch_size: int = Form(4),
     scale_factor: float = Form(1.0),
     fps: int = Form(None),
-    codec: str = Form('mp4v')
+    codec: str = Form('mp4v'),
+    colormap_name: str = Form('magma_r')
 ):
     # Create temporary file for input video
     with NamedTemporaryFile(suffix=".mp4", delete=False) as input_video:
@@ -72,7 +81,8 @@ async def process_video(
                 batch_size=batch_size,
                 scale_factor=scale_factor,
                 fps=fps,
-                codec=codec
+                codec=codec,
+                colormap_name=colormap_name
             )
             
             # Delete input file
