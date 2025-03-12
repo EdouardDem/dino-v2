@@ -45,7 +45,7 @@ COPY requirements-source.txt ./
 RUN pip install -r requirements-source.txt
 
 # Copy Python files
-COPY segmentation.py serve.py ./
+COPY segmentor.py serve.py ./
 
 # Default command
 CMD ["python", "serve.py"] 
