@@ -38,7 +38,7 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 # Install mmcv
-RUN mim install mmcv-full==1.7.2 mmsegmentation==1.2.2
+RUN mim install mmcv-full==1.6.2 mmsegmentation==0.27.0
 
 # Install source dependencies
 COPY requirements-source.txt ./
