@@ -110,7 +110,7 @@ class SegmentorClient:
 # Example usage
 if __name__ == "__main__":
     client = SegmentorClient("http://localhost:8000")
-    folder = Path(__file__).parent / "tests"
+    folder = Path(__file__).parent.parent / "tests"
     
     # Check CUDA status
     cuda_status = client.get_cuda_status()
