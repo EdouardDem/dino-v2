@@ -23,6 +23,10 @@ from mmseg.apis import init_segmentor, inference_segmentor
 
 DINOV2_BASE_URL = "https://dl.fbaipublicfiles.com/dinov2"
 
+
+# The next line is necessary to register the model in mmsegmentation
+import dinov2.eval.segmentation.models
+
 class CenterPadding(torch.nn.Module):
     def __init__(self, multiple):
         super().__init__()

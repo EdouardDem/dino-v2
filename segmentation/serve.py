@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Response, Form
 from PIL import Image
 import io
-from segmentation.segmentor import Segmentor
+from segmentor import Segmentor
 import uvicorn
 import torch
 import os
