@@ -34,6 +34,7 @@ class SegmentorClient:
         image_path: Union[str, Path],
         output_path: Optional[Union[str, Path]] = None,
         scale_factor: float = 1.0,
+        classes_only: str = None,
     ) -> Union[Image.Image, None]:
         """Generate a segmentation map from an image.
         
@@ -42,7 +43,7 @@ class SegmentorClient:
             output_path: Optional path to save the segmentation map. If not provided,
                         returns a PIL Image object
             scale_factor: Scale factor to apply to the image resolution
-        
+            classes_only: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
         Returns:
             PIL Image if output_path is None, else None
         """
@@ -51,6 +52,9 @@ class SegmentorClient:
             data = {
                 'scale_factor': scale_factor,
             }
+            if classes_only is not None:
+                data['classes_only'] = classes_only
+                    
             response = requests.post(
                 f"{self.base_url}/segmentation/image",
                 files=files,
@@ -71,6 +75,7 @@ class SegmentorClient:
         scale_factor: float = 1.0,
         fps: Optional[int] = None,
         codec: str = 'mp4v',
+        classes_only: str = None,
     ) -> None:
         """Generate a segmentation map video from a video file.
         
@@ -80,6 +85,7 @@ class SegmentorClient:
             scale_factor: Scale factor to apply to the video resolution
             fps: Output video frame rate (if None, uses input video fps)
             codec: Video codec to use ('avc1' for H.264 or 'mp4v', default: 'mp4v')
+            classes_only: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
         """
         with open(video_path, 'rb') as f:
             files = {'file': f}
@@ -89,6 +95,8 @@ class SegmentorClient:
             }
             if fps is not None:
                 data['fps'] = fps
+            if classes_only is not None:
+                data['classes_only'] = classes_only
                 
             response = requests.post(
                 f"{self.base_url}/segmentation/video",
@@ -114,6 +122,12 @@ if __name__ == "__main__":
         folder / "image.jpg",
         folder / "segmentation_image.png",
     )
+
+    client.get_segmentation_map(
+        folder / "image.jpg",
+        folder / "segmentation_image_classes_only.png",
+        classes_only="chair,aeroplane",
+    )
     
     # Process a video
     client.get_segmentation_video(
@@ -123,3 +137,12 @@ if __name__ == "__main__":
         fps=30,
         codec='mp4v',
     ) 
+
+    client.get_segmentation_video(
+        folder / "video.mp4",
+        folder / "segmentation_video_classes_only.mp4",
+        scale_factor=1.0,
+        fps=30,
+        codec='mp4v',
+        classes_only="cat",
+    )

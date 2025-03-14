@@ -61,12 +61,14 @@ To generate a segmentation map from an image:
 curl -X POST \
     -F "file=@tests/dining-room.jpg" \
     -F "scale_factor=1.0" \
+    -F "classes_only=chair,aeroplane" \
     http://localhost:8000/segmentation/image \
     --output tests/dining-room-segmentation-map.png
 ```
 
 Parameters for image processing:
 - `scale_factor`: Scale factor to apply to the image resolution (default: `1.0`)
+- `classes_only`: Comma-separated list of classes to include in the output image. Only classes in this list will be rendered.
 
 ### Get segmentation map from video
 
@@ -78,6 +80,7 @@ curl -X POST \
     -F "scale_factor=1.0" \
     -F "fps=30" \
     -F "codec=mp4v" \
+    -F "classes_only=cat" \
     http://localhost:8000/segmentation/video \
     --output tests/segmentation_video.mp4
 ```
@@ -86,11 +89,12 @@ Parameters for video processing:
 - `scale_factor`: Scale factor to apply to the video resolution (default: `1.0`)
 - `fps`: Output video frame rate (default: same as input video)
 - `codec`: Video codec to use (values `avc1`, `h264` or `mp4v`, default: `mp4v`)
+- `classes_only`: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
 
 > [!NOTE]
 > Only MP4 videos are supported. The H.264 codec (`avc1`) is recommended for better compatibility.
 
-### Available Colormaps
+### Available classes and colormaps
 
 Colormaps are predefined for the `ade20k` and `voc2012` datasets.
 Each color is associated to a class label.
@@ -98,7 +102,7 @@ Each color is associated to a class label.
 - `ade20k`: 150 classes
 - `voc2012`: 21 classes
 
-More information about the colormaps can be found in the [DINOv2 repository](https://github.com/facebookresearch/dinov2/blob/e1277af2ba9496fbadf7aec6eba56e8d882d1e35/dinov2/eval/segmentation/utils/colormaps.py).
+More information about the colormaps and associated classes can be found in the [DINOv2 repository](https://github.com/facebookresearch/dinov2/blob/e1277af2ba9496fbadf7aec6eba56e8d882d1e35/dinov2/eval/segmentation/utils/colormaps.py).
 
 ## Check CUDA status
 
@@ -137,7 +141,9 @@ python client.py
 This will create the following files:
 
 - `tests/segmentation_image.png`: Segmentation map from the image
+- `tests/segmentation_image_classes_only.png`: Segmentation map from the image with only the classes `chair` and `aeroplane` rendered
 - `tests/segmentation_video.mp4`: Segmentation map from the video
+- `tests/segmentation_video_classes_only.mp4`: Segmentation map from the video with only the class `cat` rendered
 
 > [!NOTE]
 > This requires the Docker container to be running.

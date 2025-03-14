@@ -7,7 +7,7 @@ from functools import partial
 from PIL import Image
 import numpy as np
 import cv2
-from typing import Union, Tuple
+from typing import Union
 import torch.utils.data
 from pathlib import Path
 
@@ -56,7 +56,6 @@ class Segmentor():
     backbone_model = None
     backbone_name = None
     model = None
-    colormap = None
 
     def __init__(self, 
                  backbone_size = "small",  # in ("small", "base", "large" or "giant")
@@ -69,7 +68,6 @@ class Segmentor():
         self.head_dataset = head_dataset
         self.head_scale_count = head_scale_count
         self.backbone_name = self._compute_backbone_name()
-        self.colormap = self._get_colormap()
 
         self.cfg = self._get_head_config()
         self.backbone_model = self._load_backbone()
@@ -83,6 +81,7 @@ class Segmentor():
         scale_factor: float = 1,
         fps: int = None,
         codec: str = 'mp4v',
+        classes_only: str = None,
     ) -> None:
         """Process a video to generate depth estimation.
         
@@ -92,7 +91,12 @@ class Segmentor():
             scale_factor: Scale factor to apply to the images
             fps: Frames per second for the output video. If None, uses the input video fps
             codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
+            classes_only: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
         """
+
+        # Get the colormap
+        colormap = self._get_colormap(classes_only)
+        
         # Open the video
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
@@ -129,15 +133,18 @@ class Segmentor():
                 
                 # Convert BGR frame to RGB and create PIL image
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                pil_image = Image.fromarray(frame_rgb)
                 
                 # Resize if necessary
                 if scale_factor != 1:
+                    pil_image = Image.fromarray(frame_rgb)
                     pil_image = pil_image.resize((new_width, new_height))
+                    img_array = np.array(pil_image)
+                else:
+                    img_array = frame_rgb
                 
                 # Process the frame using inference_segmentor
-                result = inference_segmentor(self.model, pil_image)[0]
-                depth_image = self._render_segmentation(result.squeeze().cpu())
+                result = inference_segmentor(self.model, img_array)[0]
+                depth_image = self._render_segmentation(result.squeeze(), colormap)
                 
                 # Convert depth image to BGR for OpenCV
                 depth_frame = cv2.cvtColor(np.array(depth_image), cv2.COLOR_RGB2BGR)
@@ -152,16 +159,21 @@ class Segmentor():
         self,
         image: Image.Image,
         scale_factor: float = 1,
+        classes_only: str = None,
     ) -> Image.Image:
         """Generate depth map for an image.
         
         Args:
             image: Input PIL image
             scale_factor: Scale factor to apply to the image resolution
+            classes_only: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
             
         Returns:
             PIL Image containing the depth map
         """
+        # Get the colormap
+        colormap = self._get_colormap(classes_only)
+
         if (scale_factor != 1):
             rescaled_image = image.resize((
                 int(scale_factor * image.width), 
@@ -173,13 +185,12 @@ class Segmentor():
         # Convert PIL image to numpy array
         img_array = np.array(rescaled_image)
         result = inference_segmentor(self.model, img_array)[0]
-        segmentation_image = self._render_segmentation(result.squeeze())
+        segmentation_image = self._render_segmentation(result.squeeze(), colormap)
         
         return segmentation_image
 
-    def _render_segmentation(self, logits) -> Image:
-        colormap_array = np.array(self.colormap, dtype=np.uint8)
-        values = colormap_array[logits + 1]
+    def _render_segmentation(self, logits, colormap) -> Image:
+        values = colormap[logits]
         return Image.fromarray(values)
 
     def _load_config_from_url(self, url: str) -> str:
@@ -210,12 +221,28 @@ class Segmentor():
         name = f"dinov2_{arch}"
         return name
     
-    def _get_colormap(self):
+    def _get_colormap(self, classes_only: str = None):
         colormaps = {
             "ade20k": COLORMAPS.ADE20K_COLORMAP,
             "voc2012": COLORMAPS.VOC2012_COLORMAP,
         }
-        return colormaps[self.head_dataset]
+        classes = {
+            "ade20k": COLORMAPS.ADE20K_CLASS_NAMES,
+            "voc2012": COLORMAPS.VOC2012_CLASS_NAMES,
+        }
+        base = colormaps[self.head_dataset]
+
+        if classes_only is not None:
+            # Get the indices of the classes in the colormap
+            classes_list = classes[self.head_dataset]
+            classes_only_list = [c.strip() for c in classes_only.split(",")]
+            excluded_indices = [i for i, c in enumerate(classes_list) if c not in classes_only_list]
+            cloned_colormap = base.copy()
+            for i in excluded_indices:
+                cloned_colormap[i] = (0, 0, 0)
+            base = cloned_colormap
+
+        return np.array(base, dtype=np.uint8)
     
     def _load_backbone(self):
         model = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=self.backbone_name)

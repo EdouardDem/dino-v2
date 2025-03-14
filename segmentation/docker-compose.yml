@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SEGMENTOR_BACKBONE_SIZE=large
+      - SEGMENTOR_BACKBONE_SIZE=small
       - SEGMENTOR_HEAD_TYPE=ms
       - SEGMENTOR_HEAD_DATASET=voc2012
       - SEGMENTOR_HEAD_SCALE_COUNT=3

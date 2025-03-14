@@ -33,6 +33,7 @@ async def get_cuda_status():
 async def process_image(
     file: UploadFile = File(...),
     scale_factor: float = Form(1.0),
+    classes_only: str = Form(None),
 ):
     # Read image from uploaded file
     image_data = await file.read()
@@ -46,6 +47,7 @@ async def process_image(
     segmentation_image = segmentor.get_segmentation_for_image(
         image,
         scale_factor=scale_factor,
+        classes_only=classes_only,
     )
     
     # Convert segmentation image to bytes
@@ -61,6 +63,7 @@ async def process_video(
     scale_factor: float = Form(1.0),
     fps: int = Form(None),
     codec: str = Form('mp4v'),
+    classes_only: str = Form(None),
 ):
     # Create temporary file for input video
     with NamedTemporaryFile(suffix=".mp4", delete=False) as input_video:
@@ -78,6 +81,7 @@ async def process_video(
                 scale_factor=scale_factor,
                 fps=fps,
                 codec=codec,
+                classes_only=classes_only,
             )
             
             # Delete input file
