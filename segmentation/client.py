@@ -34,7 +34,6 @@ class SegmentorClient:
         image_path: Union[str, Path],
         output_path: Optional[Union[str, Path]] = None,
         scale_factor: float = 1.0,
-        colormap_name: str = 'magma_r'
     ) -> Union[Image.Image, None]:
         """Generate a segmentation map from an image.
         
@@ -43,7 +42,6 @@ class SegmentorClient:
             output_path: Optional path to save the segmentation map. If not provided,
                         returns a PIL Image object
             scale_factor: Scale factor to apply to the image resolution
-            colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
         
         Returns:
             PIL Image if output_path is None, else None
@@ -52,7 +50,6 @@ class SegmentorClient:
             files = {'file': f}
             data = {
                 'scale_factor': scale_factor,
-                'colormap_name': colormap_name
             }
             response = requests.post(
                 f"{self.base_url}/segmentation/image",
@@ -74,7 +71,6 @@ class SegmentorClient:
         scale_factor: float = 1.0,
         fps: Optional[int] = None,
         codec: str = 'mp4v',
-        colormap_name: str = 'magma_r'
     ) -> None:
         """Generate a segmentation map video from a video file.
         
@@ -84,14 +80,12 @@ class SegmentorClient:
             scale_factor: Scale factor to apply to the video resolution
             fps: Output video frame rate (if None, uses input video fps)
             codec: Video codec to use ('avc1' for H.264 or 'mp4v', default: 'mp4v')
-            colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
         """
         with open(video_path, 'rb') as f:
             files = {'file': f}
             data = {
                 'scale_factor': scale_factor,
                 'codec': codec,
-                'colormap_name': colormap_name
             }
             if fps is not None:
                 data['fps'] = fps
@@ -116,17 +110,9 @@ if __name__ == "__main__":
     cuda_status = client.get_cuda_status()
     print("CUDA Status:", cuda_status)
     
-    # Process an image with different colormaps
     client.get_segmentation_map(
         folder / "image.jpg",
-        folder / "segmentation_image_magma.png",
-        colormap_name='magma_r'
-    )
-    
-    client.get_segmentation_map(
-        folder / "image.jpg",
-        folder / "segmentation_image_viridis.png",
-        colormap_name='viridis'
+        folder / "segmentation_image.png",
     )
     
     # Process a video
@@ -136,5 +122,4 @@ if __name__ == "__main__":
         scale_factor=1.0,
         fps=30,
         codec='mp4v',
-        colormap_name='binary'
     ) 

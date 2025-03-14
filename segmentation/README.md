@@ -61,14 +61,12 @@ To generate a segmentation map from an image:
 curl -X POST \
     -F "file=@tests/dining-room.jpg" \
     -F "scale_factor=1.0" \
-    -F "colormap_name=magma_r" \
     http://localhost:8000/segmentation/image \
     --output tests/dining-room-segmentation-map.png
 ```
 
 Parameters for image processing:
 - `scale_factor`: Scale factor to apply to the image resolution (default: `1.0`)
-- `colormap_name`: Matplotlib colormap to use for segmentation visualization (default: `magma_r`)
 
 ### Get segmentation map from video
 
@@ -80,7 +78,6 @@ curl -X POST \
     -F "scale_factor=1.0" \
     -F "fps=30" \
     -F "codec=mp4v" \
-    -F "colormap_name=magma_r" \
     http://localhost:8000/segmentation/video \
     --output tests/segmentation_video.mp4
 ```
@@ -89,22 +86,19 @@ Parameters for video processing:
 - `scale_factor`: Scale factor to apply to the video resolution (default: `1.0`)
 - `fps`: Output video frame rate (default: same as input video)
 - `codec`: Video codec to use (values `avc1`, `h264` or `mp4v`, default: `mp4v`)
-- `colormap_name`: Matplotlib colormap to use for segmentation visualization (default: `magma_r`)
 
 > [!NOTE]
 > Only MP4 videos are supported. The H.264 codec (`avc1`) is recommended for better compatibility.
 
 ### Available Colormaps
 
-The `colormap_name` parameter accepts any Matplotlib colormap name. Some popular options include:
-- `magma_r` (default): Reversed magma colormap
-- `viridis`: Green-blue colormap
-- `plasma`: Plasma colormap
-- `inferno`: Fire-like colormap
-- `cividis`: Color-vision-deficiency-friendly colormap
-- `binary`: Simple black and white colormap
+Colormaps are predefined for the `ade20k` and `voc2012` datasets.
+Each color is associated to a class label.
 
-For a complete list of available colormaps, visit the [Matplotlib colormap reference](https://matplotlib.org/stable/gallery/color/colormap_reference.html).
+- `ade20k`: 150 classes
+- `voc2012`: 21 classes
+
+More information about the colormaps can be found in the [DINOv2 repository](https://github.com/facebookresearch/dinov2/blob/e1277af2ba9496fbadf7aec6eba56e8d882d1e35/dinov2/eval/segmentation/utils/colormaps.py).
 
 ## Check CUDA status
 
@@ -142,8 +136,7 @@ python client.py
 
 This will create the following files:
 
-- `tests/segmentation_image_magma.png`: Segmentation map from the image with magma colormap
-- `tests/segmentation_image_viridis.png`: Segmentation map from the image with viridis colormap
+- `tests/segmentation_image.png`: Segmentation map from the image
 - `tests/segmentation_video.mp4`: Segmentation map from the video
 
 > [!NOTE]
