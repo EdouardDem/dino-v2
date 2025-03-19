@@ -97,8 +97,13 @@ class Depther():
             start_frame: Optional starting frame index (0-based, inclusive)
             end_frame: Optional ending frame index (0-based, inclusive)
             crop_method: Method to handle cropping video frames ('crop' or 'fill', default: 'crop')
+                         - 'crop': Ignore frames outside the start_frame/end_frame range
+                         - 'fill': Replace frames outside the range with black frames
         """
         self._validate_colormap(colormap_name)
+        
+        if crop_method not in ["crop", "fill"]:
+            raise ValueError(f"Invalid crop_method: {crop_method}. Must be 'crop' or 'fill'")
 
         # Open the video
         cap = cv2.VideoCapture(str(video_path))
@@ -110,6 +115,14 @@ class Depther():
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         original_fps = cap.get(cv2.CAP_PROP_FPS)
+        
+        # Validate and normalize frame indices
+        if start_frame is None or start_frame < 0:
+            start_frame = 0
+        if end_frame is None or end_frame >= total_frames:
+            end_frame = total_frames - 1
+        if start_frame > end_frame:
+            raise ValueError(f"start_frame ({start_frame}) must be less than or equal to end_frame ({end_frame})")
         
         # Configure video output
         output_fps = fps if fps is not None else original_fps
@@ -129,10 +142,24 @@ class Depther():
             raise ValueError(f"Could not open video: {output_path} with codec: {codec}")
 
         try:
+            # If crop_method is 'fill', we need to handle the frames before start_frame
+            if crop_method == 'fill' and start_frame > 0:
+                # Create a black frame
+                black_frame = np.zeros((new_height, new_width, 3), dtype=np.uint8)
+                
+                # Add black frames for all frames before start_frame
+                for _ in range(start_frame):
+                    out.write(black_frame)
+            
             # Process video in batches
             current_batch = []
             
-            for _ in range(total_frames):
+            # Set the video position to start_frame
+            if start_frame > 0:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+            
+            # Process frames in the range [start_frame, end_frame]
+            for frame_idx in range(start_frame, end_frame + 1):
                 ret, frame = cap.read()
                 if not ret:
                     break
@@ -149,7 +176,7 @@ class Depther():
                 current_batch.append(self.depth_transform(pil_image))
                 
                 # Process batch when full or at the end
-                if len(current_batch) == batch_size or _ == total_frames - 1:
+                if len(current_batch) == batch_size or frame_idx == end_frame:
                     # Create batch tensor
                     batch_tensor = torch.stack(current_batch).cuda()
                     
@@ -166,7 +193,16 @@ class Depther():
                     
                     # Reset batch
                     current_batch = []
-        
+            
+            # If crop_method is 'fill', we need to handle the frames after end_frame
+            if crop_method == 'fill' and end_frame < total_frames - 1:
+                # Create a black frame
+                black_frame = np.zeros((new_height, new_width, 3), dtype=np.uint8)
+                
+                # Add black frames for all frames after end_frame
+                for _ in range(end_frame + 1, total_frames):
+                    out.write(black_frame)
+            
         finally:
             # Release resources
             cap.release()
