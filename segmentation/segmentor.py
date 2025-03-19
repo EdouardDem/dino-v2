@@ -82,6 +82,9 @@ class Segmentor():
         fps: int = None,
         codec: str = 'mp4v',
         classes_only: str = None,
+        start_frame: int = None,
+        end_frame: int = None,
+        crop_method: str = 'crop'
     ) -> None:
         """Process a video to generate depth estimation.
         
@@ -92,6 +95,9 @@ class Segmentor():
             fps: Frames per second for the output video. If None, uses the input video fps
             codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
             classes_only: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
+            start_frame: Optional starting frame index (0-based, inclusive)
+            end_frame: Optional ending frame index (0-based, inclusive)
+            crop_method: Method to handle cropping video frames ('crop' or 'fill', default: 'crop')
         """
 
         # Get the colormap

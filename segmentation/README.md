@@ -81,6 +81,9 @@ curl -X POST \
     -F "fps=30" \
     -F "codec=mp4v" \
     -F "classes_only=cat" \
+    -F "start_frame=0" \
+    -F "end_frame=100" \
+    -F "crop_method=crop" \
     http://localhost:8000/segmentation/video \
     --output tests/segmentation_video.mp4
 ```
@@ -90,6 +93,9 @@ Parameters for video processing:
 - `fps`: Output video frame rate (default: same as input video)
 - `codec`: Video codec to use (values `avc1`, `h264` or `mp4v`, default: `mp4v`)
 - `classes_only`: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
+- `start_frame`: Optional starting frame index, 0-based inclusive (default: `None`, meaning start from first frame)
+- `end_frame`: Optional ending frame index, 0-based inclusive (default: `None`, meaning process until the last frame)
+- `crop_method`: Method to handle cropping video frames (values `crop` or `fill`, default: `crop`)
 
 > [!NOTE]
 > Only MP4 videos are supported. The H.264 codec (`avc1`) is recommended for better compatibility.

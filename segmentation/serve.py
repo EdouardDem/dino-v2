@@ -64,6 +64,9 @@ async def process_video(
     fps: int = Form(None),
     codec: str = Form('mp4v'),
     classes_only: str = Form(None),
+    start_frame: int = Form(None),
+    end_frame: int = Form(None),
+    crop_method: str = Form('crop')
 ):
     # Create temporary file for input video
     with NamedTemporaryFile(suffix=".mp4", delete=False) as input_video:
@@ -82,6 +85,9 @@ async def process_video(
                 fps=fps,
                 codec=codec,
                 classes_only=classes_only,
+                start_frame=start_frame,
+                end_frame=end_frame,
+                crop_method=crop_method
             )
             
             # Delete input file

@@ -76,6 +76,9 @@ class SegmentorClient:
         fps: Optional[int] = None,
         codec: str = 'mp4v',
         classes_only: str = None,
+        start_frame: Optional[int] = None,
+        end_frame: Optional[int] = None,
+        crop_method: str = 'crop'
     ) -> None:
         """Generate a segmentation map video from a video file.
         
@@ -86,6 +89,9 @@ class SegmentorClient:
             fps: Output video frame rate (if None, uses input video fps)
             codec: Video codec to use ('avc1' for H.264 or 'mp4v', default: 'mp4v')
             classes_only: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
+            start_frame: Optional starting frame index (0-based, inclusive)
+            end_frame: Optional ending frame index (0-based, inclusive)
+            crop_method: Method to handle cropping ('crop' or 'fill', default: 'crop')
         """
         with open(video_path, 'rb') as f:
             files = {'file': f}
@@ -97,6 +103,12 @@ class SegmentorClient:
                 data['fps'] = fps
             if classes_only is not None:
                 data['classes_only'] = classes_only
+            if start_frame is not None:
+                data['start_frame'] = start_frame
+            if end_frame is not None:
+                data['end_frame'] = end_frame
+            if crop_method is not None:
+                data['crop_method'] = crop_method
                 
             response = requests.post(
                 f"{self.base_url}/segmentation/video",
@@ -136,6 +148,9 @@ if __name__ == "__main__":
         scale_factor=1.0,
         fps=30,
         codec='mp4v',
+        start_frame=40,
+        end_frame=60,
+        crop_method='fill'
     ) 
 
     client.get_segmentation_video(
@@ -145,4 +160,7 @@ if __name__ == "__main__":
         fps=30,
         codec='mp4v',
         classes_only="cat",
+        start_frame=40,
+        end_frame=60,
+        crop_method='crop'
     )
