@@ -79,7 +79,10 @@ class Depther():
         scale_factor: float = 1,
         fps: int = None,
         codec: str = 'mp4v',
-        colormap_name: str = 'magma_r'
+        colormap_name: str = 'magma_r',
+        start_frame: int = None,
+        end_frame: int = None,
+        crop_method: str = 'crop'
     ) -> None:
         """Process a video to generate depth estimation.
         
@@ -91,6 +94,9 @@ class Depther():
             fps: Frames per second for the output video. If None, uses the input video fps
             codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
             colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
+            start_frame: Optional starting frame index (0-based, inclusive)
+            end_frame: Optional ending frame index (0-based, inclusive)
+            crop_method: Method to handle cropping video frames ('crop' or 'fill', default: 'crop')
         """
         self._validate_colormap(colormap_name)
 

@@ -63,7 +63,10 @@ async def process_video(
     scale_factor: float = Form(1.0),
     fps: int = Form(None),
     codec: str = Form('mp4v'),
-    colormap_name: str = Form('magma_r')
+    colormap_name: str = Form('magma_r'),
+    start_frame: int = Form(None),
+    end_frame: int = Form(None),
+    crop_method: str = Form('crop')
 ):
     # Create temporary file for input video
     with NamedTemporaryFile(suffix=".mp4", delete=False) as input_video:
@@ -82,7 +85,10 @@ async def process_video(
                 scale_factor=scale_factor,
                 fps=fps,
                 codec=codec,
-                colormap_name=colormap_name
+                colormap_name=colormap_name,
+                start_frame=start_frame,
+                end_frame=end_frame,
+                crop_method=crop_method
             )
             
             # Delete input file

@@ -75,7 +75,10 @@ class DeptherClient:
         scale_factor: float = 1.0,
         fps: Optional[int] = None,
         codec: str = 'mp4v',
-        colormap_name: str = 'magma_r'
+        colormap_name: str = 'magma_r',
+        start_frame: Optional[int] = None,
+        end_frame: Optional[int] = None,
+        crop_method: str = 'crop'
     ) -> None:
         """Generate a depth map video from a video file.
         
@@ -87,6 +90,9 @@ class DeptherClient:
             fps: Output video frame rate (if None, uses input video fps)
             codec: Video codec to use ('avc1' for H.264 or 'mp4v', default: 'mp4v')
             colormap_name: Name of the matplotlib colormap to use (default: 'magma_r')
+            start_frame: Optional starting frame index (0-based, inclusive)
+            end_frame: Optional ending frame index (0-based, inclusive)
+            crop_method: Method to handle cropping ('crop' or 'fill', default: 'crop')
         """
         with open(video_path, 'rb') as f:
             files = {'file': f}
@@ -98,6 +104,12 @@ class DeptherClient:
             }
             if fps is not None:
                 data['fps'] = fps
+            if start_frame is not None:
+                data['start_frame'] = start_frame
+            if end_frame is not None:
+                data['end_frame'] = end_frame
+            if crop_method is not None:
+                data['crop_method'] = crop_method
                 
             response = requests.post(
                 f"{self.base_url}/depth/video",
@@ -140,5 +152,8 @@ if __name__ == "__main__":
         scale_factor=1.0,
         fps=30,
         codec='mp4v',
-        colormap_name='binary'
+        colormap_name='binary',
+        start_frame=0,
+        end_frame=100,
+        crop_method='crop'
     ) 
