@@ -82,6 +82,9 @@ class Segmentor():
         fps: int = None,
         codec: str = 'mp4v',
         classes_only: str = None,
+        start_frame: int = None,
+        end_frame: int = None,
+        crop_method: str = 'crop'
     ) -> None:
         """Process a video to generate depth estimation.
         
@@ -92,7 +95,15 @@ class Segmentor():
             fps: Frames per second for the output video. If None, uses the input video fps
             codec: Video codec to use ('avc1', 'h264' or 'mp4v', default: 'mp4v')
             classes_only: Comma-separated list of classes to include in the output video. Only classes in this list will be rendered.
+            start_frame: Optional starting frame index (0-based, inclusive)
+            end_frame: Optional ending frame index (0-based, inclusive)
+            crop_method: Method to handle cropping video frames ('crop' or 'fill', default: 'crop')
+                         - 'crop': Ignore frames outside the start_frame/end_frame range
+                         - 'fill': Replace frames outside the range with black frames
         """
+        
+        if crop_method not in ["crop", "fill"]:
+            raise ValueError(f"Invalid crop_method: {crop_method}. Must be 'crop' or 'fill'")
 
         # Get the colormap
         colormap = self._get_colormap(classes_only)
@@ -107,6 +118,14 @@ class Segmentor():
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         original_fps = cap.get(cv2.CAP_PROP_FPS)
+        
+        # Validate and normalize frame indices
+        if start_frame is None or start_frame < 0:
+            start_frame = 0
+        if end_frame is None or end_frame >= total_frames:
+            end_frame = total_frames - 1
+        if start_frame > end_frame:
+            raise ValueError(f"start_frame ({start_frame}) must be less than or equal to end_frame ({end_frame})")
         
         # Configure video output
         output_fps = fps if fps is not None else original_fps
@@ -126,7 +145,21 @@ class Segmentor():
             raise ValueError(f"Could not open video: {output_path} with codec: {codec}")
 
         try:
-            for _ in range(total_frames):
+            # If crop_method is 'fill', we need to handle the frames before start_frame
+            if crop_method == 'fill' and start_frame > 0:
+                # Create a black frame
+                black_frame = np.zeros((new_height, new_width, 3), dtype=np.uint8)
+                
+                # Add black frames for all frames before start_frame
+                for _ in range(start_frame):
+                    out.write(black_frame)
+            
+            # Set the video position to start_frame
+            if start_frame > 0:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+            
+            # Process frames in the range [start_frame, end_frame]
+            for frame_idx in range(start_frame, end_frame + 1):
                 ret, frame = cap.read()
                 if not ret:
                     break
@@ -144,11 +177,20 @@ class Segmentor():
                 
                 # Process the frame using inference_segmentor
                 result = inference_segmentor(self.model, img_array)[0]
-                depth_image = self._render_segmentation(result.squeeze(), colormap)
+                segmentation_image = self._render_segmentation(result.squeeze(), colormap)
                 
-                # Convert depth image to BGR for OpenCV
-                depth_frame = cv2.cvtColor(np.array(depth_image), cv2.COLOR_RGB2BGR)
-                out.write(depth_frame)
+                # Convert segmentation image to BGR for OpenCV
+                segmentation_frame = cv2.cvtColor(np.array(segmentation_image), cv2.COLOR_RGB2BGR)
+                out.write(segmentation_frame)
+            
+            # If crop_method is 'fill', we need to handle the frames after end_frame
+            if crop_method == 'fill' and end_frame < total_frames - 1:
+                # Create a black frame
+                black_frame = np.zeros((new_height, new_width, 3), dtype=np.uint8)
+                
+                # Add black frames for all frames after end_frame
+                for _ in range(end_frame + 1, total_frames):
+                    out.write(black_frame)
         
         finally:
             # Release resources
